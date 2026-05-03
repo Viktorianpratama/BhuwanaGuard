@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Phone } from 'lucide-react';
+import { Phone, Menu, X } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
   const isHome = location.pathname === '/';
   const [scrolled, setScrolled] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => setScrolled(window.scrollY > 20);
@@ -15,9 +16,17 @@ const Navbar = () => {
 
   const navClasses = isHome && !scrolled
     ? 'top-0 w-full bg-transparent text-white px-0'
-    : 'top-4 mx-4 lg:mx-auto max-w-5xl rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/50 text-gray-800 px-2';
+    : 'top-4 mx-4 lg:mx-auto max-w-5xl rounded-3xl bg-white/90 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/50 text-gray-800 px-2';
 
   const textClasses = isHome && !scrolled ? 'text-white' : 'text-gray-700 hover:text-forest-900';
+
+  const navLinks = [
+    { name: 'Beranda', path: '/' },
+    { name: 'Edukasi Satwa', path: '/edukasi' },
+    { name: 'Tentang Kami', path: '/about' },
+  ];
+
+  const handleCloseMenu = () => setIsMobileMenuOpen(false);
 
   return (
     <nav className={`fixed z-50 transition-all duration-300 ${navClasses} ${isHome && !scrolled ? 'left-0 right-0' : 'left-0 right-0'}`}>
@@ -25,8 +34,8 @@ const Navbar = () => {
         <div className={`flex justify-between items-center transition-all duration-300 ${isHome && !scrolled ? 'h-20' : 'h-16'}`}>
           
           {/* Logo Section */}
-          <Link to="/" className="flex items-center space-x-2 group">
-            <div className={`size-12 rounded-xl transition-all duration-300 ${isHome && !scrolled ? 'bg-white/20 group-hover:bg-white/30' : 'bg-forest-100 group-hover:bg-forest-200'}`}>
+          <Link to="/" onClick={handleCloseMenu} className="flex items-center space-x-2 group">
+            <div className={`size-10 md:size-12 rounded-xl transition-all duration-300 ${isHome && !scrolled ? 'bg-white/20 group-hover:bg-white/30' : 'bg-forest-100 group-hover:bg-forest-200'}`}>
               <img 
                 src="/icons-bhuwana.svg" 
                 alt="Bhuwana Guard" 
@@ -38,13 +47,9 @@ const Navbar = () => {
             </span>
           </Link>
           
-          {/* Navigation Links */}
+          {/* Navigation Links - Desktop */}
           <div className="hidden md:flex space-x-2 items-center">
-            {[
-              { name: 'Beranda', path: '/' },
-              { name: 'Edukasi Satwa', path: '/edukasi' },
-              { name: 'Tentang Kami', path: '/about' },
-            ].map((link) => (
+            {navLinks.map((link) => (
               <Link 
                 key={link.name} 
                 to={link.path} 
@@ -56,13 +61,13 @@ const Navbar = () => {
             ))}
           </div>
 
-          {/* Action Buttons */}
+          {/* Action Buttons - Desktop */}
           <div className="hidden md:flex items-center space-x-3">
             <a 
               href="#contact"
               onClick={(e) => {
                 if (location.pathname !== '/') {
-                  // If not home, maybe navigate home first then scroll? Or just rely on standard routing if possible
+                  // standard routing
                 } else {
                   e.preventDefault();
                   document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
@@ -89,6 +94,80 @@ const Navbar = () => {
             </Link>
           </div>
 
+          {/* Mobile Menu Button */}
+          <div className="md:hidden flex items-center">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className={`p-2 rounded-lg transition-colors ${
+                isHome && !scrolled
+                  ? 'text-white hover:bg-white/20'
+                  : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
+
+        </div>
+
+        {/* Mobile Menu Dropdown */}
+        <div 
+          className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${
+            isMobileMenuOpen ? 'max-h-96 opacity-100 pb-4' : 'max-h-0 opacity-0'
+          }`}
+        >
+          <div className={`flex flex-col space-y-3 pt-4 border-t ${isHome && !scrolled ? 'border-white/20' : 'border-gray-200'}`}>
+            {navLinks.map((link) => (
+              <Link
+                key={link.name}
+                to={link.path}
+                onClick={handleCloseMenu}
+                className={`px-4 py-2 text-base font-semibold rounded-lg transition-colors ${
+                  isHome && !scrolled
+                    ? 'text-white hover:bg-white/10'
+                    : 'text-gray-800 hover:bg-forest-50'
+                }`}
+              >
+                {link.name}
+              </Link>
+            ))}
+            
+            <div className="pt-2 flex flex-col space-y-3 px-4">
+              <a
+                href="#contact"
+                onClick={(e) => {
+                  handleCloseMenu();
+                  if (location.pathname === '/') {
+                    e.preventDefault();
+                    document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
+                  }
+                }}
+                className={`flex items-center justify-center w-full px-5 py-3 text-sm font-semibold rounded-full shadow-sm transition-all ${
+                  isHome && !scrolled 
+                    ? 'bg-white/20 text-white hover:bg-white/30' 
+                    : 'bg-forest-50 text-forest-900 hover:bg-forest-100'
+                }`}
+              >
+                <Phone className="w-4 h-4 mr-2" />
+                Contact
+              </a>
+              <Link
+                to="/login"
+                onClick={handleCloseMenu}
+                className={`flex items-center justify-center w-full px-5 py-3 text-sm font-semibold rounded-full shadow-md transition-all ${
+                  isHome && !scrolled 
+                    ? 'bg-white text-forest-900 hover:bg-gray-100' 
+                    : 'bg-forest-900 text-white hover:bg-forest-800'
+                }`}
+              >
+                Log In
+              </Link>
+            </div>
+          </div>
         </div>
       </div>
     </nav>
