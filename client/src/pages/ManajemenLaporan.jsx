@@ -10,7 +10,7 @@ const dummyReports = [
     status: 'Menunggu Validasi',
     severity: 'Tinggi',
     desc: 'Terdengar suara gergaji mesin dan aktivitas alat berat di area hutan lindung.',
-    image: 'https://images.unsplash.com/photo-1596700877995-1779e5e783c1?auto=format&fit=crop&q=80&w=1000'
+    image: 'https://images.unsplash.com/photo-1628075264522-541fc688e9d9?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
   },
   {
     id: 2,
@@ -20,7 +20,7 @@ const dummyReports = [
     status: 'Diproses',
     severity: 'Sedang',
     desc: 'Ditemukan perangkap burung di beberapa titik dekat sungai.',
-    image: 'https://images.unsplash.com/photo-1456926631375-92c8ce872def?auto=format&fit=crop&q=80&w=1000'
+    image: 'https://media.istockphoto.com/id/2266723898/id/foto/burung-cendrawasih-yang-lebih-besar-di-new-guinea-dan-indonesia.webp?a=1&b=1&s=612x612&w=0&k=20&c=iM1UUgZGB7mPTBbVBffSJYu7kMF5K5YR2f1AaU2v1w4='
   }
 ];
 

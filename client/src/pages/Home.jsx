@@ -4,9 +4,9 @@ import Button from '../components/Button';
 import { ArrowRight, Shield, TreePine, AlertTriangle } from 'lucide-react';
 
 const dummyData = [
-  { id: 1, lat: -2.5489, lng: 118.0149, type: 'Penebangan Liar', status: 'Urgent', desc: 'Laporan penebangan liar di area konservasi.' }, // Borneo
-  { id: 2, lat: -4.1449, lng: 138.0803, type: 'Konflik Satwa', status: 'Dalam Proses', desc: 'Konflik satwa liar dengan pemukiman warga.' }, // Papua
-  { id: 3, lat: 0.7893, lng: 113.9213, type: 'Patroli Rutin', status: 'Selesai', desc: 'Patroli wilayah aman.' }, // Kalimantan
+  { id: 1, lat: -0.8615, lng: 134.0620, type: 'Penebangan Liar', status: 'Urgent', desc: 'Laporan penebangan liar di area konservasi Manokwari.' },
+  { id: 2, lat: -4.0984, lng: 138.9326, type: 'Konflik Satwa', status: 'Dalam Proses', desc: 'Konflik satwa liar dengan pemukiman warga di Jayawijaya.' },
+  { id: 3, lat: -4.5297, lng: 136.8833, type: 'Patroli Rutin', status: 'Selesai', desc: 'Patroli wilayah hutan lindung Timika terpantau aman.' },
 ];
 
 const Home = () => {
@@ -25,7 +25,7 @@ const Home = () => {
       <section className="relative h-screen flex items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
           <img 
-            src="https://images.unsplash.com/photo-1511497584788-876760111969?auto=format&fit=crop&q=80&w=2000" 
+            src="https://images.unsplash.com/photo-1542273917363-3b1817f69a2d?w=600&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8NHx8Zm9yZXN0fGVufDB8fDB8fHww" 
             alt="Forest Background" 
             className="w-full h-full object-cover"
           />
@@ -91,8 +91,8 @@ const Home = () => {
           
           <div className="bg-white p-4 rounded-3xl shadow-xl border border-gray-100 h-[600px] w-full z-0 overflow-hidden relative">
             <MapContainer 
-              center={[-2.5489, 118.0149]} 
-              zoom={5} 
+              center={[-4.0, 136.5]} 
+              zoom={6} 
               style={{ height: '100%', width: '100%', borderRadius: '1rem', zIndex: 0 }}
             >
               <TileLayer

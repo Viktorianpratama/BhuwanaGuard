@@ -5,6 +5,8 @@ import AdminLayout from './layouts/AdminLayout';
 // Pages
 import Home from './pages/Home';
 import Edukasi from './pages/Edukasi';
+import EdukasiDetail from './pages/EdukasiDetail';
+import About from './pages/About';
 import Login from './pages/Login';
 import AdminDashboard from './pages/AdminDashboard';
 import ManajemenLaporan from './pages/ManajemenLaporan';
@@ -19,6 +21,8 @@ function App() {
         <Route element={<UserLayout />}>
           <Route path="/" element={<Home />} />
           <Route path="/edukasi" element={<Edukasi />} />
+          <Route path="/edukasi/:id" element={<EdukasiDetail />} />
+          <Route path="/about" element={<About />} />
         </Route>
 
         {/* Auth Routes */}

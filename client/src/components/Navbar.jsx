@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Phone } from 'lucide-react';
 
 const Navbar = () => {
   const location = useLocation();
@@ -12,11 +13,9 @@ const Navbar = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navClasses = isHome
-    ? scrolled
-      ? 'top-4 mx-4 lg:mx-auto max-w-5xl rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/50 text-gray-800 px-2'
-      : 'top-0 w-full bg-transparent text-white px-0'
-    : 'top-4 mx-4 lg:mx-auto max-w-5xl rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/50 text-gray-800 sticky z-50 px-2';
+  const navClasses = isHome && !scrolled
+    ? 'top-0 w-full bg-transparent text-white px-0'
+    : 'top-4 mx-4 lg:mx-auto max-w-5xl rounded-full bg-white/90 backdrop-blur-md shadow-lg shadow-gray-200/50 border border-white/50 text-gray-800 px-2';
 
   const textClasses = isHome && !scrolled ? 'text-white' : 'text-gray-700 hover:text-forest-900';
 
@@ -58,10 +57,7 @@ const Navbar = () => {
           </div>
 
           {/* Action Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <Link to="/login" className={`font-semibold text-sm transition-colors ${textClasses}`}>
-              Masuk
-            </Link>
+          <div className="hidden md:flex items-center space-x-3">
             <a 
               href="#contact"
               onClick={(e) => {
@@ -72,14 +68,25 @@ const Navbar = () => {
                   document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' });
                 }
               }}
-              className={`px-6 py-2 text-sm font-semibold rounded-full shadow-lg transform transition-all hover:-translate-y-0.5 ${
+              className={`flex items-center px-5 py-2 text-sm font-semibold rounded-full shadow-md transform transition-all hover:-translate-y-0.5 ${
                 isHome && !scrolled 
                   ? 'bg-white text-forest-900 hover:bg-forest-50 shadow-white/20' 
                   : 'bg-forest-900 text-white hover:bg-forest-800 shadow-forest-900/20'
               }`}
             >
+              <Phone className="w-4 h-4 mr-2" />
               Contact
             </a>
+            <Link 
+              to="/login" 
+              className={`px-5 py-2 text-sm font-semibold rounded-full shadow-md transform transition-all hover:-translate-y-0.5 ${
+                isHome && !scrolled 
+                  ? 'bg-white text-forest-900 hover:bg-forest-50 shadow-white/20' 
+                  : 'bg-forest-900 text-white hover:bg-forest-800 shadow-forest-900/20'
+              }`}
+            >
+              Log In
+            </Link>
           </div>
 
         </div>
