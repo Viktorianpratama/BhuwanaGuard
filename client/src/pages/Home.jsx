@@ -122,21 +122,22 @@ const Home = () => {
                 </CircleMarker>
               ))}
             </MapContainer>
-          </div>
-          
-          {/* Legend */}
-          <div className="flex justify-center items-center gap-6 mt-8">
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-red-500 opacity-80"></div>
-              <span className="text-sm text-gray-600 font-medium">Urgent</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-yellow-500 opacity-80"></div>
-              <span className="text-sm text-gray-600 font-medium">Dalam Proses</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded-full bg-green-500 opacity-80"></div>
-              <span className="text-sm text-gray-600 font-medium">Aman / Selesai</span>
+            
+            {/* Legend (Floating inside map) */}
+            <div className="absolute bottom-8 right-8 z-[1000] bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col gap-3">
+              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Keterangan</h4>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-red-500 opacity-80 border-2 border-white shadow-sm"></div>
+                <span className="text-sm text-gray-800 font-bold">Urgent</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80 border-2 border-white shadow-sm"></div>
+                <span className="text-sm text-gray-800 font-bold">Dalam Proses</span>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-5 h-5 rounded-full bg-green-500 opacity-80 border-2 border-white shadow-sm"></div>
+                <span className="text-sm text-gray-800 font-bold">Aman / Selesai</span>
+              </div>
             </div>
           </div>
         </div>
