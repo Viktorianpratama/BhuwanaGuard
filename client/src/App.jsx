@@ -2,6 +2,7 @@ import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import UserLayout from './layouts/UserLayout';
 import AdminLayout from './layouts/AdminLayout';
+import ProtectedRoute from './components/ProtectedRoute';
 
 // Lazy load Pages
 const Home = React.lazy(() => import('./pages/Home'));
@@ -42,11 +43,13 @@ function App() {
           <Route path="/login" element={<Login />} />
 
           {/* Admin Routes */}
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="laporan" element={<ManajemenLaporan />} />
-            <Route path="peringatan" element={<SistemPeringatan />} />
-            <Route path="statistik" element={<Statistik />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/admin" element={<AdminLayout />}>
+              <Route index element={<AdminDashboard />} />
+              <Route path="laporan" element={<ManajemenLaporan />} />
+              <Route path="peringatan" element={<SistemPeringatan />} />
+              <Route path="statistik" element={<Statistik />} />
+            </Route>
           </Route>
         </Routes>
       </Suspense>

@@ -55,18 +55,18 @@ const Statistik = () => {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-1 flex items-center">
-            <LayoutDashboard className="h-7 w-7 mr-3 text-forest-700" />
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1 flex items-center">
+            <LayoutDashboard className="h-7 w-7 mr-3 text-forest-700 dark:text-forest-400" />
             Dashboard Statistik
           </h1>
-          <p className="text-sm text-gray-500">Ringkasan analitik dan pemantauan data laporan Bhuwana Guard.</p>
+          <p className="text-sm text-gray-500 dark:text-gray-400">Ringkasan analitik dan pemantauan data laporan Bhuwana Guard.</p>
         </div>
-        <div className="flex items-center space-x-2 bg-white px-4 py-2 rounded-xl border border-gray-100 shadow-sm">
-          <span className="text-sm font-medium text-gray-600">Periode:</span>
-          <select className="text-sm font-bold text-forest-700 bg-transparent outline-none cursor-pointer">
-            <option>Hari Ini</option>
-            <option>Bulan Ini</option>
-            <option>Tahun Ini</option>
+        <div className="flex items-center space-x-2 bg-white dark:bg-gray-800 px-4 py-2 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300">Periode:</span>
+          <select className="text-sm font-bold text-forest-700 dark:text-forest-400 bg-transparent outline-none cursor-pointer">
+            <option className="dark:bg-gray-800">Hari Ini</option>
+            <option className="dark:bg-gray-800">Bulan Ini</option>
+            <option className="dark:bg-gray-800">Tahun Ini</option>
           </select>
         </div>
       </div>
@@ -79,18 +79,18 @@ const Statistik = () => {
           { title: 'Menunggu Validasi', value: warningCount, trend: '-5%', isUp: false, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
           { title: 'Kondisi Kritis', value: urgentCount, trend: '+2%', isUp: true, icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, idx) => (
-          <div key={idx} className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex flex-col justify-between hover:shadow-md transition-shadow">
+          <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
-              <div className={`p-3 rounded-2xl ${stat.bg} ${stat.color}`}>
+              <div className={`p-3 rounded-2xl ${stat.bg} dark:bg-opacity-20 ${stat.color}`}>
                 <stat.icon className="h-6 w-6" />
               </div>
-              <span className={`text-xs font-bold px-2 py-1 rounded-full ${stat.isUp ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>
+              <span className={`text-xs font-bold px-2 py-1 rounded-full ${stat.isUp ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'}`}>
                 {stat.trend}
               </span>
             </div>
             <div>
-              <p className="text-sm text-gray-500 font-medium mb-1">{stat.title}</p>
-              <h3 className="text-3xl font-bold text-gray-900">{stat.value}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium mb-1">{stat.title}</p>
+              <h3 className="text-3xl font-bold text-gray-900 dark:text-white">{stat.value}</h3>
             </div>
           </div>
         ))}
@@ -100,11 +100,11 @@ const Statistik = () => {
         
         {/* Main Map Content - 2 Columns */}
         <div className="lg:col-span-2 flex flex-col">
-          <div className="bg-white rounded-3xl shadow-sm border border-gray-100 flex-1 flex flex-col overflow-hidden">
-            <div className="p-6 border-b border-gray-100 flex justify-between items-center">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex-1 flex flex-col overflow-hidden z-0">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Peta Sebaran Kasus</h3>
-                <p className="text-xs text-gray-500 mt-1">Pemantauan lokasi laporan di wilayah timur Indonesia</p>
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">Peta Sebaran Kasus</h3>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Pemantauan lokasi laporan di wilayah timur Indonesia</p>
               </div>
             </div>
             <div className="flex-1 w-full h-[500px] lg:h-auto min-h-[400px] z-0">
@@ -142,8 +142,8 @@ const Statistik = () => {
         {/* Right Sidebar Content - 1 Column */}
         <div className="flex flex-col">
           
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 flex-1 flex flex-col items-center justify-center">
-            <h3 className="text-lg font-bold text-gray-900 w-full mb-8 text-center border-b border-gray-100 pb-4">Distribusi Laporan</h3>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex-1 flex flex-col items-center justify-center">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white w-full mb-8 text-center border-b border-gray-100 dark:border-gray-700 pb-4">Distribusi Laporan</h3>
             
             <div className="relative w-64 h-64 mb-8">
               <svg viewBox="0 0 100 100" className="w-full h-full transform -rotate-90 drop-shadow-md">
@@ -167,35 +167,35 @@ const Statistik = () => {
               </svg>
               
               {/* White hole center with Data */}
-              <div className="absolute inset-0 m-auto w-32 h-32 bg-white rounded-full flex flex-col items-center justify-center shadow-inner">
-                <span className="text-4xl font-extrabold text-gray-900">{totalReports}</span>
-                <span className="text-xs text-gray-500 font-bold uppercase tracking-wider mt-1">Kasus</span>
+              <div className="absolute inset-0 m-auto w-32 h-32 bg-white dark:bg-gray-800 rounded-full flex flex-col items-center justify-center shadow-inner">
+                <span className="text-4xl font-extrabold text-gray-900 dark:text-white">{totalReports}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400 font-bold uppercase tracking-wider mt-1">Kasus</span>
               </div>
             </div>
 
             <div className="flex flex-col w-full gap-4 px-4">
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-red-50 border border-red-100">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-full bg-red-500 mr-3 shadow-sm"></div>
-                  <span className="font-semibold text-red-900 text-sm">Kritis / Urgent</span>
+                  <span className="font-semibold text-red-900 dark:text-red-400 text-sm">Kritis / Urgent</span>
                 </div>
-                <span className="font-bold text-red-700">{urgentPct}%</span>
+                <span className="font-bold text-red-700 dark:text-red-400">{urgentPct}%</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-yellow-50 border border-yellow-100">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-yellow-50 dark:bg-yellow-900/10 border border-yellow-100 dark:border-yellow-900/30">
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-full bg-yellow-500 mr-3 shadow-sm"></div>
-                  <span className="font-semibold text-yellow-900 text-sm">Dalam Proses</span>
+                  <span className="font-semibold text-yellow-900 dark:text-yellow-400 text-sm">Dalam Proses</span>
                 </div>
-                <span className="font-bold text-yellow-700">{warningPct}%</span>
+                <span className="font-bold text-yellow-700 dark:text-yellow-400">{warningPct}%</span>
               </div>
 
-              <div className="flex items-center justify-between p-3 rounded-2xl bg-green-50 border border-green-100">
+              <div className="flex items-center justify-between p-3 rounded-2xl bg-green-50 dark:bg-green-900/10 border border-green-100 dark:border-green-900/30">
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-full bg-green-500 mr-3 shadow-sm"></div>
-                  <span className="font-semibold text-green-900 text-sm">Aman / Selesai</span>
+                  <span className="font-semibold text-green-900 dark:text-green-400 text-sm">Aman / Selesai</span>
                 </div>
-                <span className="font-bold text-green-700">{safePct}%</span>
+                <span className="font-bold text-green-700 dark:text-green-400">{safePct}%</span>
               </div>
             </div>
             

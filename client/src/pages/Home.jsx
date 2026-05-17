@@ -51,45 +51,45 @@ const Home = () => {
       </section>
 
       {/* Stats Section */}
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-white dark:bg-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            <div className="text-center p-8 rounded-2xl bg-forest-50 border border-forest-100">
-              <div className="inline-flex items-center justify-center p-4 bg-forest-100 rounded-full mb-6 text-forest-700">
+            <div className="text-center p-8 rounded-2xl bg-forest-50 dark:bg-gray-800 border border-forest-100 dark:border-gray-700">
+              <div className="inline-flex items-center justify-center p-4 bg-forest-100 dark:bg-forest-900/50 rounded-full mb-6 text-forest-700 dark:text-forest-400">
                 <Shield className="h-8 w-8" />
               </div>
-              <h3 className="text-4xl font-bold text-forest-900 mb-2">1,240+</h3>
-              <p className="text-gray-600 font-medium">Laporan Diselesaikan</p>
+              <h3 className="text-4xl font-bold text-forest-900 dark:text-white mb-2">1,240+</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Laporan Diselesaikan</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-forest-50 border border-forest-100">
-              <div className="inline-flex items-center justify-center p-4 bg-forest-100 rounded-full mb-6 text-forest-700">
+            <div className="text-center p-8 rounded-2xl bg-forest-50 dark:bg-gray-800 border border-forest-100 dark:border-gray-700">
+              <div className="inline-flex items-center justify-center p-4 bg-forest-100 dark:bg-forest-900/50 rounded-full mb-6 text-forest-700 dark:text-forest-400">
                 <TreePine className="h-8 w-8" />
               </div>
-              <h3 className="text-4xl font-bold text-forest-900 mb-2">50K+</h3>
-              <p className="text-gray-600 font-medium">Hektar Hutan Terlindungi</p>
+              <h3 className="text-4xl font-bold text-forest-900 dark:text-white mb-2">50K+</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Hektar Hutan Terlindungi</p>
             </div>
-            <div className="text-center p-8 rounded-2xl bg-forest-50 border border-forest-100">
-              <div className="inline-flex items-center justify-center p-4 bg-forest-100 rounded-full mb-6 text-forest-700">
+            <div className="text-center p-8 rounded-2xl bg-forest-50 dark:bg-gray-800 border border-forest-100 dark:border-gray-700">
+              <div className="inline-flex items-center justify-center p-4 bg-forest-100 dark:bg-forest-900/50 rounded-full mb-6 text-forest-700 dark:text-forest-400">
                 <AlertTriangle className="h-8 w-8" />
               </div>
-              <h3 className="text-4xl font-bold text-forest-900 mb-2">24/7</h3>
-              <p className="text-gray-600 font-medium">Pemantauan Aktif</p>
+              <h3 className="text-4xl font-bold text-forest-900 dark:text-white mb-2">24/7</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium">Pemantauan Aktif</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Map Section */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-gray-50 dark:bg-gray-800 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Peta Kawasan Rawan</h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white mb-4">Peta Kawasan Rawan</h2>
+            <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
               Pemantauan real-time untuk area dengan tingkat kerawanan tinggi terhadap penebangan liar dan konflik satwa.
             </p>
           </div>
           
-          <div className="bg-white p-4 rounded-3xl shadow-xl border border-gray-100 h-[600px] w-full z-0 overflow-hidden relative">
+          <div className="bg-white dark:bg-gray-900 p-4 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 h-[600px] w-full z-0 overflow-hidden relative">
             <MapContainer 
               center={[-4.0, 136.5]} 
               zoom={6} 
@@ -124,19 +124,19 @@ const Home = () => {
             </MapContainer>
             
             {/* Legend (Floating inside map) */}
-            <div className="absolute bottom-8 right-8 z-1000 bg-white/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 flex flex-col gap-3">
-              <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Keterangan</h4>
+            <div className="absolute bottom-8 right-8 z-1000 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
+              <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Keterangan</h4>
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-red-500 opacity-80 border-2 border-white shadow-sm"></div>
-                <span className="text-sm text-gray-800 font-bold">Urgent</span>
+                <div className="w-5 h-5 rounded-full bg-red-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>
+                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Urgent</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80 border-2 border-white shadow-sm"></div>
-                <span className="text-sm text-gray-800 font-bold">Dalam Proses</span>
+                <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>
+                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Dalam Proses</span>
               </div>
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 rounded-full bg-green-500 opacity-80 border-2 border-white shadow-sm"></div>
-                <span className="text-sm text-gray-800 font-bold">Aman / Selesai</span>
+                <div className="w-5 h-5 rounded-full bg-green-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>
+                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Aman / Selesai</span>
               </div>
             </div>
           </div>
