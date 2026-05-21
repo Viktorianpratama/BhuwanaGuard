@@ -1,5 +1,4 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, GoogleAuthProvider } from "firebase/auth";
 
 // Konfigurasi Firebase Anda menggunakan Environment Variables
 const firebaseConfig = {
@@ -15,6 +14,6 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 
-// Initialize Firebase Authentication and get a reference to the service
-export const auth = getAuth(app);
-export const googleProvider = new GoogleAuthProvider();
+// Firebase Auth sudah dihapus. 
+// Gunakan instance app ini untuk inisialisasi Realtime Database atau Firestore jika dibutuhkan.
+export { app };

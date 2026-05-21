@@ -16,6 +16,7 @@ const AdminDashboard = React.lazy(() => import('./pages/AdminDashboard'));
 const ManajemenLaporan = React.lazy(() => import('./pages/ManajemenLaporan'));
 const SistemPeringatan = React.lazy(() => import('./pages/SistemPeringatan'));
 const Statistik = React.lazy(() => import('./pages/Statistik'));
+const ManajemenAkun = React.lazy(() => import('./pages/ManajemenAkun'));
 
 // Simple loading fallback
 const PageLoader = () => (
@@ -49,6 +50,7 @@ function App() {
               <Route path="laporan" element={<ManajemenLaporan />} />
               <Route path="peringatan" element={<SistemPeringatan />} />
               <Route path="statistik" element={<Statistik />} />
+              <Route path="akun" element={<ManajemenAkun />} />
             </Route>
           </Route>
         </Routes>

@@ -1,16 +1,17 @@
-import { NavLink, useLocation } from 'react-router-dom';
-import { Home, AlertTriangle, TrendingUp, LogOut, X } from 'lucide-react';
-import { auth } from '../firebase';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Home, AlertTriangle, TrendingUp, LogOut, X, Users } from 'lucide-react';
 import ThemeToggle from './ThemeToggle';
 
 const Sidebar = ({ isOpen, setIsOpen }) => {
   const location = useLocation();
+  const navigate = useNavigate();
   const isCommandCentre = location.pathname === '/admin';
 
   const navItems = [
     { name: 'Manajemen Laporan', icon: Home, path: '/admin/laporan' },
     { name: 'Sistem Peringatan', icon: AlertTriangle, path: '/admin/peringatan' },
     { name: 'Statistik', icon: TrendingUp, path: '/admin/statistik' },
+    { name: 'Manajemen Akun', icon: Users, path: '/admin/akun' },
   ];
 
   const handleLinkClick = () => {
@@ -18,7 +19,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
   };
 
   const handleLogout = () => {
-    auth.signOut();
+    localStorage.removeItem('token');
+    navigate('/login');
   };
 
   return (
