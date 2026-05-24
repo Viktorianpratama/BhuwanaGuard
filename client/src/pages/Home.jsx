@@ -1,19 +1,57 @@
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import Button from '../components/Button';
 import { ArrowRight, Shield, TreePine, AlertTriangle } from 'lucide-react';
 
-const dummyData = [
-  { id: 1, lat: -0.8615, lng: 134.0620, type: 'Penebangan Liar', status: 'Urgent', desc: 'Laporan penebangan liar di area konservasi Manokwari.' },
-  { id: 2, lat: -4.0984, lng: 138.9326, type: 'Konflik Satwa', status: 'Dalam Proses', desc: 'Konflik satwa liar dengan pemukiman warga di Jayawijaya.' },
-  { id: 3, lat: -4.5297, lng: 136.8833, type: 'Patroli Rutin', status: 'Selesai', desc: 'Patroli wilayah hutan lindung Timika terpantau aman.' },
-];
-
 const Home = () => {
+  const [incidentData, setIncidentData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const response = await fetch('http://localhost:3000/api/public/reports');
+        const result = await response.json();
+        
+        if (result.success) {
+          const formattedData = result.reports.map(report => {
+            let mappedStatus = 'Diterima (Baru)';
+            const s = (report.status || '').toLowerCase();
+            if (s.includes('selesai') || s.includes('aman') || s.includes('resolved')) mappedStatus = 'Selesai';
+            else if (s.includes('proses') || s.includes('progress')) mappedStatus = 'Diproses';
+
+            return {
+              id: report.id,
+              lat: report.latitude || 0,
+              lng: report.longitude || 0,
+              type: report.type || 'Laporan Umum',
+              status: mappedStatus,
+              desc: report.address || 'Lokasi kejadian'
+            };
+          });
+          setIncidentData(formattedData);
+        }
+      } catch (err) {
+        console.error('Error fetching public reports:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReports();
+    
+    const intervalId = setInterval(() => {
+      fetchReports();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const getMarkerColor = (status) => {
     switch (status) {
-      case 'Urgent': return '#ef4444'; // Red
-      case 'Dalam Proses': return '#f59e0b'; // Yellow
+      case 'Diterima (Baru)': return '#ef4444'; // Red
+      case 'Diproses': return '#f59e0b'; // Yellow
       case 'Selesai': return '#22c55e'; // Green
       default: return '#3b82f6';
     }
@@ -90,16 +128,25 @@ const Home = () => {
           </div>
           
           <div className="bg-white dark:bg-gray-900 p-4 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 h-[600px] w-full z-0 overflow-hidden relative">
+            {loading ? (
+              <div className="h-full w-full flex items-center justify-center bg-gray-50 dark:bg-gray-800 rounded-2xl">
+                <div className="flex flex-col items-center space-y-4">
+                  <div className="animate-spin rounded-full h-12 w-12 border-4 border-forest-500 border-t-transparent"></div>
+                  <p className="text-gray-600 dark:text-gray-400 font-medium">Memuat peta kawasan...</p>
+                </div>
+              </div>
+            ) : (
             <MapContainer 
-              center={[-4.0, 136.5]} 
-              zoom={6} 
+              center={[-0.7893, 113.9213]} 
+              zoom={5} 
               style={{ height: '100%', width: '100%', borderRadius: '1rem', zIndex: 0 }}
+              scrollWheelZoom={false}
             >
               <TileLayer
                 attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
-              {dummyData.map((data) => (
+              {incidentData.map((data) => (
                 <CircleMarker 
                   key={data.id}
                   center={[data.lat, data.lng]}
@@ -111,8 +158,8 @@ const Home = () => {
                       <h4 className="font-bold text-gray-900">{data.type}</h4>
                       <p className="text-sm text-gray-600 my-1">{data.desc}</p>
                       <span className={`inline-block px-2 py-1 text-xs font-semibold rounded-full mt-2 ${
-                        data.status === 'Urgent' ? 'bg-red-100 text-red-700' :
-                        data.status === 'Dalam Proses' ? 'bg-yellow-100 text-yellow-700' :
+                        data.status === 'Diterima (Baru)' ? 'bg-red-100 text-red-700' :
+                        data.status === 'Diproses' ? 'bg-yellow-100 text-yellow-700' :
                         'bg-green-100 text-green-700'
                       }`}>
                         {data.status}
@@ -122,17 +169,18 @@ const Home = () => {
                 </CircleMarker>
               ))}
             </MapContainer>
+            )}
             
             {/* Legend (Floating inside map) */}
             <div className="absolute bottom-8 right-8 z-1000 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm p-4 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
               <h4 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-1">Keterangan</h4>
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-red-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>
-                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Urgent</span>
+                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Diterima (Baru)</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-yellow-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>
-                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Dalam Proses</span>
+                <span className="text-sm text-gray-800 dark:text-gray-200 font-bold">Diproses</span>
               </div>
               <div className="flex items-center gap-3">
                 <div className="w-5 h-5 rounded-full bg-green-500 opacity-80 border-2 border-white dark:border-gray-800 shadow-sm"></div>

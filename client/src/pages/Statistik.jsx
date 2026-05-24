@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { LayoutDashboard, CheckCircle2, Clock, ShieldAlert } from 'lucide-react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
@@ -24,30 +25,109 @@ const iconSafe = createCustomIcon('#22c55e'); // Green
 const iconWarning = createCustomIcon('#eab308'); // Yellow
 const iconUrgent = createCustomIcon('#ef4444'); // Red
 
-// Focused on Papua
-const mapData = [
-  { id: 1, name: 'Sorong', position: [-0.8817, 131.2514], status: 'Safe', icon: iconSafe, desc: 'Patroli rutin aman.' },
-  { id: 2, name: 'Manokwari', position: [-0.8615, 134.0620], status: 'Urgent', icon: iconUrgent, desc: 'Penebangan liar aktif.' },
-  { id: 3, name: 'Jayapura', position: [-2.5337, 140.7181], status: 'Warning', icon: iconWarning, desc: 'Laporan warga, menunggu validasi.' },
-  { id: 4, name: 'Wamena', position: [-4.0984, 138.9486], status: 'Urgent', icon: iconUrgent, desc: 'Konflik satwa dengan warga.' },
-  { id: 5, name: 'Timika', position: [-4.5297, 136.8836], status: 'Safe', icon: iconSafe, desc: 'Hutan lindung terpantau.' },
-  { id: 6, name: 'Merauke', position: [-8.4667, 140.3333], status: 'Safe', icon: iconSafe, desc: 'Area perbatasan aman.' },
-];
-
 const Statistik = () => {
+  const [mapData, setMapData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/admin/reports', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          const formatted = result.reports.map(r => {
+            let status;
+            let icon;
+            const s = (r.status || '').toLowerCase();
+            if (s.includes('selesai') || s.includes('aman') || s.includes('resolved')) {
+              status = 'Safe'; icon = iconSafe;
+            } else if (s.includes('proses') || s.includes('progress')) {
+              status = 'Warning'; icon = iconWarning;
+            } else {
+              // Jika baru masuk atau "diterima"
+              status = 'Urgent'; icon = iconUrgent;
+            }
+            return {
+              id: r.id,
+              name: r.type || 'Laporan Umum',
+              position: [r.latitude || 0, r.longitude || 0],
+              status: status,
+              icon: icon,
+              desc: r.address || 'Lokasi tidak diketahui',
+              createdAt: r.createdAt
+            };
+          });
+          setMapData(formatted);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+    
+    const intervalId = setInterval(() => {
+      fetchReports();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
   const totalReports = mapData.length;
   const safeCount = mapData.filter(d => d.status === 'Safe').length;
   const warningCount = mapData.filter(d => d.status === 'Warning').length;
   const urgentCount = mapData.filter(d => d.status === 'Urgent').length;
 
-  const safePct = Math.round((safeCount / totalReports) * 100);
-  const warningPct = Math.round((warningCount / totalReports) * 100);
-  const urgentPct = 100 - safePct - warningPct; // Ensure 100% total
+  const safePct = totalReports === 0 ? 0 : Math.round((safeCount / totalReports) * 100);
+  const warningPct = totalReports === 0 ? 0 : Math.round((warningCount / totalReports) * 100);
+  const urgentPct = totalReports === 0 ? 0 : (100 - safePct - warningPct); // Ensure 100% total
 
   const C = 251.327; // Circumference for r=40
   const urgentDash = (urgentPct / 100) * C;
   const warningDash = (warningPct / 100) * C;
   const safeDash = (safePct / 100) * C;
+
+  const calculateTrend = (data, filterStatus = null) => {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+    let currentPeriod = 0;
+    let previousPeriod = 0;
+
+    data.forEach(item => {
+      if (filterStatus && item.status !== filterStatus) return;
+      if (!item.createdAt) return;
+
+      const date = new Date(item.createdAt);
+      if (date >= sevenDaysAgo && date <= now) {
+        currentPeriod++;
+      } else if (date >= fourteenDaysAgo && date < sevenDaysAgo) {
+        previousPeriod++;
+      }
+    });
+
+    if (previousPeriod === 0) {
+      if (currentPeriod === 0) return { text: '0%', isUp: true };
+      return { text: '+100%', isUp: true };
+    }
+
+    const percentageChange = Math.round(((currentPeriod - previousPeriod) / previousPeriod) * 100);
+    return {
+      text: percentageChange > 0 ? `+${percentageChange}%` : `${percentageChange}%`,
+      isUp: percentageChange >= 0
+    };
+  };
+
+  const totalTrend = calculateTrend(mapData);
+  const safeTrend = calculateTrend(mapData, 'Safe');
+  const warningTrend = calculateTrend(mapData, 'Warning');
+  const urgentTrend = calculateTrend(mapData, 'Urgent');
 
   return (
     <div className="max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
@@ -74,10 +154,10 @@ const Statistik = () => {
       {/* Top Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { title: 'Total Laporan', value: totalReports, trend: '+12%', isUp: true, icon: LayoutDashboard, color: 'text-blue-600', bg: 'bg-blue-50' },
-          { title: 'Diselesaikan', value: safeCount, trend: '+18%', isUp: true, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
-          { title: 'Menunggu Validasi', value: warningCount, trend: '-5%', isUp: false, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
-          { title: 'Kondisi Kritis', value: urgentCount, trend: '+2%', isUp: true, icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },
+          { title: 'Total Laporan', value: totalReports, trend: totalTrend.text, isUp: totalTrend.isUp, icon: LayoutDashboard, color: 'text-blue-600', bg: 'bg-blue-50' },
+          { title: 'Selesai', value: safeCount, trend: safeTrend.text, isUp: safeTrend.isUp, icon: CheckCircle2, color: 'text-green-600', bg: 'bg-green-50' },
+          { title: 'Diproses', value: warningCount, trend: warningTrend.text, isUp: warningTrend.isUp, icon: Clock, color: 'text-yellow-600', bg: 'bg-yellow-50' },
+          { title: 'Diterima (Baru)', value: urgentCount, trend: urgentTrend.text, isUp: urgentTrend.isUp, icon: ShieldAlert, color: 'text-red-600', bg: 'bg-red-50' },
         ].map((stat, idx) => (
           <div key={idx} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 flex flex-col justify-between hover:shadow-md transition-shadow">
             <div className="flex justify-between items-start mb-4">
@@ -108,9 +188,12 @@ const Statistik = () => {
               </div>
             </div>
             <div className="flex-1 w-full h-[500px] lg:h-auto min-h-[400px] z-0">
+              {loading ? (
+                 <div className="h-full flex items-center justify-center"><div className="animate-spin rounded-full h-8 w-8 border-4 border-forest-500 border-t-transparent"></div></div>
+              ) : (
               <MapContainer 
-                center={[-4.0, 137.0]} 
-                zoom={6} 
+                center={[-0.7893, 113.9213]} 
+                zoom={5} 
                 style={{ width: '100%', height: '100%' }}
                 scrollWheelZoom={false}
               >
@@ -128,13 +211,14 @@ const Statistik = () => {
                           city.status === 'Urgent' ? 'bg-red-500' : 
                           city.status === 'Warning' ? 'bg-yellow-500' : 'bg-green-500'
                         }`}>
-                          {city.status}
+                          {city.status === 'Urgent' ? 'Diterima' : city.status === 'Warning' ? 'Diproses' : 'Selesai'}
                         </span>
                       </div>
                     </Popup>
                   </Marker>
                 ))}
               </MapContainer>
+              )}
             </div>
           </div>
         </div>
@@ -177,7 +261,7 @@ const Statistik = () => {
               <div className="flex items-center justify-between p-3 rounded-2xl bg-red-50 dark:bg-red-900/10 border border-red-100 dark:border-red-900/30">
                 <div className="flex items-center">
                   <div className="w-4 h-4 rounded-full bg-red-500 mr-3 shadow-sm"></div>
-                  <span className="font-semibold text-red-900 dark:text-red-400 text-sm">Kritis / Urgent</span>
+                  <span className="font-semibold text-red-900 dark:text-red-400 text-sm">Diterima (Baru)</span>
                 </div>
                 <span className="font-bold text-red-700 dark:text-red-400">{urgentPct}%</span>
               </div>

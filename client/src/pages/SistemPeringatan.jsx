@@ -1,23 +1,94 @@
+import { useState, useEffect } from 'react';
 import { AlertTriangle, LayoutDashboard } from 'lucide-react';
 
-const alertStats = [
-  { label: 'Alert Aktif', desc: 'Perlu Perhatian Segera', value: '12', color: 'bg-[#ff3b30]', textColor: 'text-white' },
-  { label: 'Dalam Proses', desc: 'Sedang Ditangani', value: '5', color: 'bg-[#ffcc00]', textColor: 'text-gray-900' },
-  { label: 'Selesai Hari Ini', desc: 'Masalah Terselesaikan', value: '4', color: 'bg-[#34c759]', textColor: 'text-white' },
-];
-
-const activeAlerts = [
-  { id: '001', severity: 'Urgent', title: 'Salawati (Kabupaten Sorong)', subtitle: 'Yogyakarta', time: '2 Menit Lalu' },
-  { id: '002', severity: 'Warning', title: 'Salawati (Kabupaten Sorong)', subtitle: 'Yogyakarta', time: '2 Menit Lalu' },
-];
-
-const areaReports = [
-  { action: 'Penebangan Liar', location: 'di Jayapura', status: 'Urgent', statusColor: 'text-red-500 border-red-200 bg-red-50', time: '25 Menit' },
-  { action: 'Penebangan Liar terdeteksi', location: 'di Jayapura', status: 'Warning', statusColor: 'text-yellow-500 border-yellow-200 bg-yellow-50', time: '6 Jam 25 Menit' },
-  { action: 'Penebangan Liar', location: 'di Jayapura', status: 'Normal', statusColor: 'text-gray-500 border-gray-200 bg-gray-50', time: '1 Hari Lalu' },
-];
-
 const SistemPeringatan = () => {
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/admin/reports', {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const result = await response.json();
+        if (result.success) {
+          setReports(result.reports);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchReports();
+    
+    const intervalId = setInterval(() => {
+      fetchReports();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
+
+  const totalReports = reports.length;
+  const activeAlertsCount = reports.filter(r => {
+    const s = (r.status || '').toLowerCase();
+    return !s.includes('proses') && !s.includes('progress') && !s.includes('selesai') && !s.includes('aman') && !s.includes('resolved');
+  }).length;
+  
+  const inProgressCount = reports.filter(r => {
+    const s = (r.status || '').toLowerCase();
+    return s.includes('proses') || s.includes('progress');
+  }).length;
+
+  const finishedCount = reports.filter(r => {
+    const s = (r.status || '').toLowerCase();
+    return s.includes('selesai') || s.includes('aman') || s.includes('resolved');
+  }).length;
+
+  const alertStats = [
+    { label: 'Diterima (Baru)', desc: 'Perlu Perhatian Segera', value: loading ? '...' : activeAlertsCount, color: 'bg-[#ff3b30]', textColor: 'text-white' },
+    { label: 'Dalam Proses', desc: 'Sedang Ditangani', value: loading ? '...' : inProgressCount, color: 'bg-[#ffcc00]', textColor: 'text-gray-900' },
+    { label: 'Selesai', desc: 'Masalah Terselesaikan', value: loading ? '...' : finishedCount, color: 'bg-[#34c759]', textColor: 'text-white' },
+  ];
+
+  const activeAlerts = reports.filter(r => {
+    const s = (r.status || '').toLowerCase();
+    return !s.includes('selesai') && !s.includes('aman') && !s.includes('resolved');
+  }).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(r => {
+    const s = (r.status || '').toLowerCase();
+    let severity = 'Diproses';
+    if (!s.includes('proses') && !s.includes('progress')) severity = 'Diterima';
+    
+    return {
+      id: r.id.substring(0, 5),
+      severity: severity,
+      title: r.type || 'Laporan Umum',
+      subtitle: r.address || 'Lokasi tidak diketahui',
+      time: r.createdAt ? new Date(r.createdAt).toLocaleDateString('id-ID') : ''
+    };
+  });
+
+  const areaReports = [...reports].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).map(r => {
+    const s = (r.status || '').toLowerCase();
+    let statusLabel = 'Diterima';
+    let statusColor = 'text-red-500 border-red-200 bg-red-50';
+
+    if (s.includes('selesai') || s.includes('aman') || s.includes('resolved')) {
+      statusLabel = 'Selesai'; statusColor = 'text-green-500 border-green-200 bg-green-50';
+    } else if (s.includes('proses') || s.includes('progress')) {
+      statusLabel = 'Diproses'; statusColor = 'text-yellow-500 border-yellow-200 bg-yellow-50';
+    }
+
+    return {
+      action: r.type || 'Laporan Kejadian',
+      location: r.address || 'Lokasi tidak diketahui',
+      status: statusLabel,
+      statusColor: statusColor,
+      time: r.createdAt ? new Date(r.createdAt).toLocaleDateString('id-ID') : ''
+    }
+  });
   return (
     <div className="max-w-6xl mx-auto space-y-10">
       
@@ -62,7 +133,7 @@ const SistemPeringatan = () => {
               <div key={idx} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:border-forest-200 dark:hover:border-forest-500 hover:shadow-md transition-all">
                 <div className="flex justify-between items-start mb-4">
                   <span className="text-xs text-gray-400 dark:text-gray-500 font-medium">ID : {alert.id}</span>
-                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide ${alert.severity === 'Urgent' ? 'bg-[#ff3b30] text-white' : 'bg-[#ffcc00] text-gray-900 dark:text-gray-900'}`}>
+                  <span className={`text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wide ${alert.severity === 'Diterima' ? 'bg-[#ff3b30] text-white' : 'bg-[#ffcc00] text-gray-900 dark:text-gray-900'}`}>
                     {alert.severity}
                   </span>
                 </div>
@@ -115,8 +186,8 @@ const SistemPeringatan = () => {
             </div>
             
             <div className="p-6 border-t border-gray-100 dark:border-gray-700 mt-auto flex justify-between items-center bg-gray-50/30 dark:bg-gray-900/30">
-              <span className="font-bold text-gray-900 dark:text-white text-lg">Total Aktivitas Hari Ini</span>
-              <span className="text-2xl font-black text-gray-900 dark:text-white">17</span>
+              <span className="font-bold text-gray-900 dark:text-white text-lg">Total Aktivitas Sistem</span>
+              <span className="text-2xl font-black text-gray-900 dark:text-white">{loading ? '...' : totalReports}</span>
             </div>
           </div>
         </div>

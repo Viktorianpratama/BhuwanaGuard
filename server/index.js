@@ -4,15 +4,13 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const db = require('./db');
-
-// Inisialisasi Firebase Admin SDK sudah dihapus karena kita menggunakan MySQL untuk auth
-// Jika nanti butuh Firebase Admin untuk fitur lain (misal notifikasi), bisa ditambahkan kembali.
+const { firestore, admin } = require('./firebase');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Middleware untuk memverifikasi JWT buatan kita sendiri
+// Middleware untuk memverifikasi JWT buatan sendiri
 const verifyAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
@@ -198,6 +196,101 @@ app.get('/api/admin-data', verifyAdmin, (req, res) => {
 app.get('/api/verify-token', verifyAdmin, (req, res) => {
   // Jika middleware verifyAdmin lolos, berarti token valid
   res.json({ success: true, user: req.user });
+});
+
+// ==========================================
+// ENDPOINTS FIRESTORE (Laporan)
+// ==========================================
+
+// 5. Endpoint Ambil Semua Laporan dari Firestore
+app.get('/api/admin/reports', verifyAdmin, async (req, res) => {
+  try {
+    const snapshot = await firestore.collection('reports').get();
+    
+    if (snapshot.empty) {
+      return res.json({ success: true, reports: [], message: 'Belum ada laporan.' });
+    }
+
+    const reports = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      reports.push({
+        id: doc.id,
+        ...data,
+        // Jika createdAt berupa timestamp Firestore, ubah ke format Date Javascript
+        createdAt: data.createdAt ? data.createdAt.toDate() : null,
+      });
+    });
+
+    res.json({ success: true, reports });
+  } catch (error) {
+    console.error('Error mengambil laporan dari Firestore:', error);
+    res.status(500).json({ error: 'Gagal mengambil data laporan dari server' });
+  }
+});
+
+// 6. Endpoint Update Status Laporan (Diterima, Diproses, Selesai)
+app.put('/api/admin/reports/:id/status', verifyAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // 'Diterima', 'In Progress', 'Selesai' dll
+
+    if (!status) {
+      return res.status(400).json({ error: 'Status tidak boleh kosong' });
+    }
+
+    const reportRef = firestore.collection('reports').doc(id);
+    const doc = await reportRef.get();
+
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Laporan tidak ditemukan' });
+    }
+
+    // Update status dan simpan waktu update/resolved jika status Selesai
+    const updateData = { status: status };
+    
+    // Opsional: jika status selesai, tambahkan field resolvedAt (untuk hitung rata rata pelaporan selesai)
+    if (status.toLowerCase().includes('selesai')) {
+      updateData.resolvedAt = admin.firestore.FieldValue.serverTimestamp();
+    }
+
+    await reportRef.update(updateData);
+
+    res.json({ success: true, message: `Status laporan berhasil diubah menjadi ${status}` });
+  } catch (error) {
+    console.error('Error update status laporan:', error);
+    res.status(500).json({ error: 'Gagal mengupdate status laporan' });
+  }
+});
+
+// 7. Endpoint Publik Ambil Semua Laporan dari Firestore (Tanpa Token)
+app.get('/api/public/reports', async (req, res) => {
+  try {
+    const snapshot = await firestore.collection('reports').get();
+    
+    if (snapshot.empty) {
+      return res.json({ success: true, reports: [], message: 'Belum ada laporan.' });
+    }
+
+    const reports = [];
+    snapshot.forEach(doc => {
+      const data = doc.data();
+      reports.push({
+        id: doc.id,
+        type: data.type,
+        address: data.address,
+        latitude: data.latitude,
+        longitude: data.longitude,
+        status: data.status,
+        createdAt: data.createdAt ? data.createdAt.toDate() : null,
+      });
+    });
+
+    res.json({ success: true, reports });
+  } catch (error) {
+    console.error('Error mengambil laporan publik dari Firestore:', error);
+    res.status(500).json({ error: 'Gagal mengambil data laporan dari server' });
+  }
 });
 
 const PORT = process.env.PORT || 3000;

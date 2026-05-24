@@ -1,50 +1,116 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search, ChevronLeft, Image as ImageIcon, Home } from 'lucide-react';
 
-const dummyReports = [
-  {
-    id: 1,
-    type: 'Penebangan Liar',
-    location: 'Jayapura, Papua',
-    time: '11 Menit yang lalu',
-    status: 'Menunggu Validasi',
-    severity: 'Tinggi',
-    desc: 'Terdengar suara gergaji mesin dan aktivitas alat berat di area hutan lindung.',
-    image: 'https://images.unsplash.com/photo-1628075264522-541fc688e9d9?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'
-  },
-  {
-    id: 2,
-    type: 'Perburuan Burung Cendrawasih',
-    location: 'Sorong, Papua',
-    time: '25 Menit yang lalu',
-    status: 'Diproses',
-    severity: 'Sedang',
-    desc: 'Ditemukan perangkap burung di beberapa titik dekat sungai.',
-    image: 'https://media.istockphoto.com/id/2266723898/id/foto/burung-cendrawasih-yang-lebih-besar-di-new-guinea-dan-indonesia.webp?a=1&b=1&s=612x612&w=0&k=20&c=iM1UUgZGB7mPTBbVBffSJYu7kMF5K5YR2f1AaU2v1w4='
-  }
-];
-
 const ManajemenLaporan = () => {
-  const [reports, setReports] = useState(dummyReports);
+  const [reports, setReports] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/admin/reports', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        const result = await response.json();
+        
+        if (result.success) {
+          const mappedData = result.reports.map(r => {
+            // Mapping status
+            let mappedStatus = 'Menunggu Validasi';
+            const s = (r.status || '').toLowerCase();
+            if (s.includes('diterima')) mappedStatus = 'Diterima';
+            else if (s.includes('progress') || s.includes('proses')) mappedStatus = 'Diproses';
+            else if (s.includes('selesai') || s.includes('resolved') || s.includes('aman')) mappedStatus = 'Selesai';
+            else if (s.includes('lapangan')) mappedStatus = 'Diteruskan ke Lapangan';
+
+            // Mapping severity
+            let severity = 'Sedang';
+            if (s.includes('bahaya') || s.includes('darurat') || s.includes('emergency')) severity = 'Tinggi';
+            else if (s.includes('selesai') || s.includes('aman')) severity = 'Rendah';
+
+            return {
+              id: r.id,
+              type: r.type || 'Laporan Kejadian',
+              location: r.address || 'Lokasi tidak diketahui',
+              time: r.createdAt ? new Date(r.createdAt).toLocaleString('id-ID') : 'Waktu tidak diketahui',
+              status: mappedStatus,
+              severity: severity,
+              desc: r.address || 'Detail lengkap laporan',
+              image: r.imageUrl
+            };
+          });
+          setReports(mappedData);
+        } else {
+          setError(result.error);
+        }
+      } catch (err) {
+        console.error('Error fetching reports:', err);
+        setError('Gagal memuat data dari server.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReports();
+    
+    const intervalId = setInterval(() => {
+      fetchReports();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
   const [selectedReportId, setSelectedReportId] = useState(null);
   const [filter, setFilter] = useState('Semua');
+  const [toast, setToast] = useState({ show: false, message: '', type: 'success' });
 
   const selectedReport = reports.find(r => r.id === selectedReportId);
 
-  const handlePushToMobile = (id) => {
-    // Simulasi push ke mobile
-    setReports(reports.map(r => 
-      r.id === id ? { ...r, status: 'Diteruskan ke Lapangan' } : r
-    ));
+  const handleUpdateStatus = async (id, newStatus) => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`http://localhost:3000/api/admin/reports/${id}/status`, {
+        method: 'PUT',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` 
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+      
+      const result = await response.json();
+      if (result.success) {
+        // Update state lokal agar langsung terlihat
+        setReports(reports.map(report => 
+          report.id === id ? { ...report, status: newStatus } : report
+        ));
+        // Jika status yang diupdate adalah dari laporan yang sedang dibuka
+        if (selectedReportId === id) {
+          // Re-trigger re-render by doing nothing special since we use `reports.find` below
+        }
+        setToast({ show: true, message: result.message, type: 'success' });
+        setTimeout(() => setToast({ show: false, message: '', type: 'success' }), 3000);
+      } else {
+        setToast({ show: true, message: 'Gagal: ' + result.error, type: 'error' });
+        setTimeout(() => setToast({ show: false, message: '', type: 'error' }), 3000);
+      }
+    } catch (err) {
+      console.error('Error updating status:', err);
+      setToast({ show: true, message: 'Terjadi kesalahan saat mengupdate status', type: 'error' });
+      setTimeout(() => setToast({ show: false, message: '', type: 'error' }), 3000);
+    }
   };
 
   const getStatusColor = (status) => {
-    switch(status) {
-      case 'Menunggu Validasi': return 'bg-gray-500 text-white';
-      case 'Diproses': return 'bg-yellow-400 text-white';
-      case 'Diteruskan ke Lapangan': return 'bg-blue-500 text-white';
-      default: return 'bg-gray-500 text-white';
-    }
+    const s = (status || '').toLowerCase();
+    if (s.includes('diterima')) return 'bg-blue-500 text-white';
+    if (s.includes('proses') || s.includes('progress')) return 'bg-yellow-400 text-gray-900';
+    if (s.includes('selesai') || s.includes('aman') || s.includes('resolved')) return 'bg-green-500 text-white';
+    if (s.includes('darurat') || s.includes('bahaya') || s.includes('urgent') || s.includes('tinggi')) return 'bg-red-500 text-white';
+    return 'bg-gray-500 text-white';
   };
 
   const filteredReports = reports.filter(r => {
@@ -53,8 +119,20 @@ const ManajemenLaporan = () => {
   });
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
+    <div className="max-w-7xl mx-auto space-y-6 relative">
       
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className={`fixed top-10 left-1/2 transform -translate-x-1/2 z-50 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-in fade-in slide-in-from-top-10 duration-300 ${toast.type === 'error' ? 'bg-red-500 text-white' : 'bg-forest-600 text-white'}`}>
+          {toast.type === 'error' ? (
+            <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+          ) : (
+            <div className="h-5 w-5 rounded-full bg-white/20 flex items-center justify-center font-bold text-sm">✓</div>
+          )}
+          <span className="font-bold text-sm">{toast.message}</span>
+        </div>
+      )}
+
       {/* Jika ada report yang dipilih, tampilkan Layout Detail (Kanan), kalau tidak, tampilkan Daftar (Kiri) */}
       <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]">
         
@@ -89,33 +167,43 @@ const ManajemenLaporan = () => {
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {filteredReports.map(report => (
-              <div key={report.id} className={`flex flex-col sm:flex-row gap-4 p-4 border rounded-2xl transition-all cursor-pointer ${selectedReportId === report.id ? 'border-forest-500 bg-forest-50/30 dark:bg-forest-900/20 ring-2 ring-forest-500/20' : 'border-gray-100 dark:border-gray-700 hover:border-forest-200 dark:hover:border-forest-500 hover:shadow-md'}`} onClick={() => setSelectedReportId(report.id)}>
-                <div className="h-24 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden shrink-0">
-                  {report.image ? (
-                    <img src={report.image} alt="Kejadian" className="w-full h-full object-cover" />
-                  ) : (
-                    <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500"><ImageIcon /></div>
-                  )}
-                </div>
-                <div className="flex-1 flex flex-col justify-between">
-                  <div>
-                    <h4 className="font-bold text-sm text-gray-900 dark:text-white mb-2">Informasi Laporan</h4>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1"><span className="w-20 inline-block">Jenis Laporan</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.type}</span></p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-1"><span className="w-20 inline-block">Lokasi Kejadian</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.location}</span></p>
-                    <p className="text-xs text-gray-500 dark:text-gray-400"><span className="w-20 inline-block">Waktu Laporan</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.time}</span></p>
+            {loading ? (
+              <div className="flex justify-center items-center h-32">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-forest-500 border-t-transparent"></div>
+              </div>
+            ) : error ? (
+              <div className="text-center text-red-500 p-4">{error}</div>
+            ) : filteredReports.length === 0 ? (
+              <div className="text-center text-gray-500 p-4">Tidak ada laporan ditemukan.</div>
+            ) : (
+              filteredReports.map(report => (
+                <div key={report.id} className={`flex flex-col sm:flex-row gap-4 p-4 border rounded-2xl transition-all cursor-pointer ${selectedReportId === report.id ? 'border-forest-500 bg-forest-50/30 dark:bg-forest-900/20 ring-2 ring-forest-500/20' : 'border-gray-100 dark:border-gray-700 hover:border-forest-200 dark:hover:border-forest-500 hover:shadow-md'}`} onClick={() => setSelectedReportId(report.id)}>
+                  <div className="h-24 w-32 bg-gray-200 dark:bg-gray-700 rounded-xl overflow-hidden shrink-0">
+                    {report.image ? (
+                      <img src={report.image} alt="Kejadian" className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400 dark:text-gray-500"><ImageIcon /></div>
+                    )}
+                  </div>
+                  <div className="flex-1 flex flex-col justify-between">
+                    <div>
+                      <h4 className="font-bold text-sm text-gray-900 dark:text-white mb-2">Informasi Laporan</h4>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1"><span className="w-20 inline-block">Jenis Laporan</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.type}</span></p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-1"><span className="w-20 inline-block">Lokasi Kejadian</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.location}</span></p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400"><span className="w-20 inline-block">Waktu Laporan</span>: <span className="font-medium text-gray-700 dark:text-gray-300">{report.time}</span></p>
+                    </div>
+                  </div>
+                  <div className="flex flex-col justify-between items-end">
+                    <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${getStatusColor(report.status)}`}>
+                      {report.status}
+                    </span>
+                    <button className="mt-4 px-4 py-1.5 text-xs font-bold text-forest-700 dark:text-forest-400 border border-forest-200 dark:border-forest-800 rounded-full hover:bg-forest-50 dark:hover:bg-forest-900/30 transition-colors flex items-center">
+                      Detail <span className="ml-1">→</span>
+                    </button>
                   </div>
                 </div>
-                <div className="flex flex-col justify-between items-end">
-                  <span className={`px-4 py-1.5 rounded-full text-[10px] font-bold tracking-wide shadow-sm ${getStatusColor(report.status)}`}>
-                    {report.status}
-                  </span>
-                  <button className="mt-4 px-4 py-1.5 text-xs font-bold text-forest-700 dark:text-forest-400 border border-forest-200 dark:border-forest-800 rounded-full hover:bg-forest-50 dark:hover:bg-forest-900/30 transition-colors flex items-center">
-                    Detail <span className="ml-1">→</span>
-                  </button>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
 
@@ -141,18 +229,45 @@ const ManajemenLaporan = () => {
                   <img src={selectedReport.image} alt="Kejadian" className="w-full h-full object-cover" />
                 </div>
 
-                {/* Action Button */}
-                <button 
-                  onClick={() => handlePushToMobile(selectedReport.id)}
-                  disabled={selectedReport.status === 'Diteruskan ke Lapangan'}
-                  className={`w-full py-4 rounded-2xl font-bold text-white shadow-lg transition-all transform hover:scale-[1.01] active:scale-[0.99] ${
-                    selectedReport.status === 'Diteruskan ke Lapangan' 
-                      ? 'bg-blue-500 cursor-not-allowed opacity-90'
-                      : 'bg-forest-700 hover:bg-forest-800'
-                  }`}
-                >
-                  {selectedReport.status === 'Diteruskan ke Lapangan' ? 'Telah Diteruskan ke Admin Lapangan ✓' : 'Push Laporan ke Admin Lapangan'}
-                </button>
+                {/* Action Buttons */}
+                <div className="bg-gray-50 dark:bg-gray-700/30 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                  <h4 className="font-bold text-gray-900 dark:text-white mb-4 text-center">Ubah Status Laporan</h4>
+                  <div className="flex flex-col sm:flex-row gap-3">
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedReport.id, 'Diterima')}
+                      disabled={selectedReport.status === 'Diterima' || selectedReport.status.includes('Selesai')}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all ${
+                        selectedReport.status === 'Diterima' || selectedReport.status.includes('Selesai')
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg'
+                      }`}
+                    >
+                      Terima Laporan
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedReport.id, 'In Progress')}
+                      disabled={selectedReport.status === 'In Progress' || selectedReport.status.includes('Selesai')}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all ${
+                        selectedReport.status === 'In Progress' || selectedReport.status.includes('Selesai')
+                          ? 'bg-gray-200 text-gray-400 cursor-not-allowed dark:bg-gray-700 dark:text-gray-500'
+                          : 'bg-yellow-500 hover:bg-yellow-600 text-white shadow-md hover:shadow-lg'
+                      }`}
+                    >
+                      Proses (In Progress)
+                    </button>
+                    <button 
+                      onClick={() => handleUpdateStatus(selectedReport.id, 'Selesai')}
+                      disabled={selectedReport.status.includes('Selesai')}
+                      className={`flex-1 py-3 rounded-xl font-bold transition-all ${
+                        selectedReport.status.includes('Selesai')
+                          ? 'bg-green-100 text-green-500 cursor-not-allowed dark:bg-green-900/30 dark:text-green-700'
+                          : 'bg-green-500 hover:bg-green-600 text-white shadow-md hover:shadow-lg'
+                      }`}
+                    >
+                      Tandai Selesai
+                    </button>
+                  </div>
+                </div>
 
                 {/* Details */}
                 <div className="space-y-6">

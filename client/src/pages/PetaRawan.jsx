@@ -1,20 +1,71 @@
+import { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { ShieldAlert, AlertTriangle, CheckCircle, Info } from 'lucide-react';
 
-const incidentData = [
-  { id: 1, lat: -0.8615, lng: 134.0620, type: 'Penebangan Liar', status: 'Bahaya', msg: 'Awas! Ada aktivitas penebangan hutan liar di sini. Jauhi area ini!' },
-  { id: 2, lat: -4.0984, lng: 138.9326, type: 'Hewan Liar Masuk Desa', status: 'Hati-hati', msg: 'Hati-hati! Ada hewan liar yang masuk ke dekat rumah warga.' },
-  { id: 3, lat: -4.5297, lng: 136.8833, type: 'Patroli Hutan', status: 'Aman', msg: 'Area ini aman. Penjaga hutan sedang berpatroli.' },
-  { id: 4, lat: -2.5337, lng: 140.7181, type: 'Kebakaran Hutan', status: 'Bahaya', msg: 'Awas! Terdeteksi titik api atau kebakaran hutan. Segera lapor petugas!' },
-];
-
 const PetaRawan = () => {
+  const [incidentData, setIncidentData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchReports = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        const response = await fetch('http://localhost:3000/api/admin/reports', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          // Format data dari backend agar sesuai dengan komponen Peta
+          const formattedData = result.reports.map(report => {
+            let mappedStatus;
+            const statusLower = (report.status || '').toLowerCase();
+            if (statusLower.includes('selesai') || statusLower.includes('aman') || statusLower.includes('resolved')) mappedStatus = 'Selesai';
+            else if (statusLower.includes('proses') || statusLower.includes('progress')) mappedStatus = 'Diproses';
+            else mappedStatus = 'Diterima (Baru)';
+
+            return {
+              id: report.id,
+              lat: report.latitude || 0,
+              lng: report.longitude || 0,
+              type: report.type || 'Laporan Umum',
+              status: mappedStatus,
+              msg: report.address || 'Lokasi kejadian',
+              imageUrl: report.imageUrl,
+              originalStatus: report.status
+            };
+          });
+          
+          setIncidentData(formattedData);
+        } else {
+          setError(result.error || 'Gagal mengambil data laporan');
+        }
+      } catch (err) {
+        console.error('Error fetching reports:', err);
+        setError('Gagal terhubung ke server');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchReports();
+    
+    const intervalId = setInterval(() => {
+      fetchReports();
+    }, 10000);
+
+    return () => clearInterval(intervalId);
+  }, []);
   const getStatusColor = (status) => {
     switch (status) {
-      case 'Bahaya': return '#ef4444'; // Red
-      case 'Hati-hati': return '#f59e0b'; // Yellow
-      case 'Aman': return '#22c55e'; // Green
+      case 'Diterima (Baru)': return '#ef4444'; // Red
+      case 'Diproses': return '#f59e0b'; // Yellow
+      case 'Selesai': return '#22c55e'; // Green
       default: return '#3b82f6';
     }
   };
@@ -43,8 +94,8 @@ const PetaRawan = () => {
               <AlertTriangle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-red-600">Merah = Bahaya</h3>
-              <p className="text-gray-600 font-medium mt-1">Area berbahaya. Ada kejadian darurat. Jauhi area ini!</p>
+              <h3 className="text-2xl font-bold text-red-600">Merah = Diterima</h3>
+              <p className="text-gray-600 font-medium mt-1">Laporan baru yang belum direspon atau menunggu validasi.</p>
             </div>
           </div>
           
@@ -53,8 +104,8 @@ const PetaRawan = () => {
               <Info className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-yellow-600">Kuning = Hati-hati</h3>
-              <p className="text-gray-600 font-medium mt-1">Area perlu diwaspadai. Sedang ada masalah yang ditangani.</p>
+              <h3 className="text-2xl font-bold text-yellow-600">Kuning = Diproses</h3>
+              <p className="text-gray-600 font-medium mt-1">Laporan sedang dalam penanganan oleh petugas kami.</p>
             </div>
           </div>
 
@@ -63,61 +114,82 @@ const PetaRawan = () => {
               <CheckCircle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-green-600">Hijau = Aman</h3>
-              <p className="text-gray-600 font-medium mt-1">Area aman. Terpantau baik oleh tim penjaga hutan kami.</p>
+              <h3 className="text-2xl font-bold text-green-600">Hijau = Selesai</h3>
+              <p className="text-gray-600 font-medium mt-1">Kejadian telah selesai ditangani dan area dinyatakan aman.</p>
             </div>
           </div>
         </div>
 
         {/* Map Container */}
         <div className="bg-white p-4 rounded-3xl shadow-xl border border-gray-100 h-[650px] w-full z-0 overflow-hidden relative">
-          <MapContainer 
-            center={[-4.0, 136.5]} 
-            zoom={6} 
-            style={{ height: '100%', width: '100%', borderRadius: '1rem', zIndex: 0 }}
-            scrollWheelZoom={false}
-          >
-            <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            />
-            {incidentData.map((data) => (
-              <CircleMarker 
-                key={data.id}
-                center={[data.lat, data.lng]}
-                pathOptions={{ 
-                  color: getStatusColor(data.status), 
-                  fillColor: getStatusColor(data.status), 
-                  fillOpacity: 0.7,
-                  weight: 3
-                }}
-                radius={20} // Bigger radius for easier clicking
-              >
-                <Popup className="custom-popup">
-                  <div className="p-3 max-w-[250px] text-center">
-                    <div className={`mx-auto w-12 h-12 rounded-full mb-3 flex items-center justify-center ${
-                      data.status === 'Bahaya' ? 'bg-red-100 text-red-600' :
-                      data.status === 'Hati-hati' ? 'bg-yellow-100 text-yellow-600' :
-                      'bg-green-100 text-green-600'
-                    }`}>
-                      {data.status === 'Bahaya' && <AlertTriangle className="h-6 w-6" />}
-                      {data.status === 'Hati-hati' && <Info className="h-6 w-6" />}
-                      {data.status === 'Aman' && <CheckCircle className="h-6 w-6" />}
+          {loading ? (
+            <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-2xl">
+              <div className="flex flex-col items-center space-y-4">
+                <div className="animate-spin rounded-full h-12 w-12 border-4 border-forest-500 border-t-transparent"></div>
+                <p className="text-gray-600 font-medium">Memuat data koordinat dari server...</p>
+              </div>
+            </div>
+          ) : error ? (
+            <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-2xl">
+              <div className="text-center p-6 bg-red-50 rounded-2xl border border-red-100 max-w-md">
+                <ShieldAlert className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-bold text-red-700 mb-2">Gagal Memuat Peta</h3>
+                <p className="text-red-600">{error}</p>
+                <p className="text-sm text-red-500 mt-4">Pastikan Anda sudah login sebagai Admin dan server backend menyala.</p>
+              </div>
+            </div>
+          ) : (
+            <MapContainer 
+              center={[-0.7893, 113.9213]} // Tengah-tengah Indonesia
+              zoom={5} 
+              style={{ height: '100%', width: '100%', borderRadius: '1rem', zIndex: 0 }}
+              scrollWheelZoom={false}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              {incidentData.map((data) => (
+                <CircleMarker 
+                  key={data.id}
+                  center={[data.lat, data.lng]}
+                  pathOptions={{ 
+                    color: getStatusColor(data.status), 
+                    fillColor: getStatusColor(data.status), 
+                    fillOpacity: 0.7,
+                    weight: 3
+                  }}
+                  radius={20} // Bigger radius for easier clicking
+                >
+                  <Popup className="custom-popup">
+                    <div className="p-3 max-w-[250px] text-center">
+                      <div className={`mx-auto w-12 h-12 rounded-full mb-3 flex items-center justify-center ${
+                        data.status === 'Diterima (Baru)' ? 'bg-red-100 text-red-600' :
+                        data.status === 'Diproses' ? 'bg-yellow-100 text-yellow-600' :
+                        'bg-green-100 text-green-600'
+                      }`}>
+                        {data.status === 'Diterima (Baru)' && <AlertTriangle className="h-6 w-6" />}
+                        {data.status === 'Diproses' && <Info className="h-6 w-6" />}
+                        {data.status === 'Selesai' && <CheckCircle className="h-6 w-6" />}
+                      </div>
+                      <h4 className="text-xl font-bold text-gray-900 mb-2">{data.type}</h4>
+                      <p className="text-base text-gray-700 font-medium leading-relaxed">{data.msg}</p>
+                      {data.imageUrl && (
+                        <img src={data.imageUrl} alt="Kejadian" className="w-full h-32 object-cover rounded-lg mt-2 mb-2 shadow-sm" />
+                      )}
+                      <span className={`inline-block px-4 py-2 text-sm font-bold rounded-full mt-2 uppercase tracking-wider ${
+                        data.status === 'Diterima (Baru)' ? 'bg-red-500 text-white' :
+                        data.status === 'Diproses' ? 'bg-yellow-500 text-white' :
+                        'bg-green-500 text-white'
+                      }`}>
+                        Status: {data.originalStatus || data.status}
+                      </span>
                     </div>
-                    <h4 className="text-xl font-bold text-gray-900 mb-2">{data.type}</h4>
-                    <p className="text-base text-gray-700 font-medium leading-relaxed">{data.msg}</p>
-                    <span className={`inline-block px-4 py-2 text-sm font-bold rounded-full mt-4 uppercase tracking-wider ${
-                      data.status === 'Bahaya' ? 'bg-red-500 text-white' :
-                      data.status === 'Hati-hati' ? 'bg-yellow-500 text-white' :
-                      'bg-green-500 text-white'
-                    }`}>
-                      Status: {data.status}
-                    </span>
-                  </div>
-                </Popup>
-              </CircleMarker>
-            ))}
-          </MapContainer>
+                  </Popup>
+                </CircleMarker>
+              ))}
+            </MapContainer>
+          )}
         </div>
         
         {/* Helper Note below map */}
