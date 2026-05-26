@@ -10,7 +10,7 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Middleware untuk memverifikasi JWT buatan sendiri
+// Middleware untuk memverifikasi JWT ni
 const verifyAdmin = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
