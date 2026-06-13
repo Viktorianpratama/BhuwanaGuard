@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { UserPlus, KeyRound, Shield, AlertCircle, CheckCircle, X, Trash2 } from 'lucide-react';
+import { useState } from 'react';
+import { UserPlus, KeyRound, Shield, AlertCircle, CheckCircle } from 'lucide-react';
 
 const ManajemenAkun = () => {
   const [activeTab, setActiveTab] = useState('change-password');
@@ -17,16 +17,10 @@ const ManajemenAkun = () => {
   const [newAdminPassword, setNewAdminPassword] = useState('');
   const [admins, setAdmins] = useState([]);
 
-  useEffect(() => {
-    if (activeTab === 'manage-admins') {
-      fetchAdmins();
-    }
-  }, [activeTab]);
-
   const fetchAdmins = async () => {
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/admin/users', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await res.json();
@@ -47,6 +41,13 @@ const ManajemenAkun = () => {
     }, 5000);
   };
 
+  const handleTabChange = (tab) => {
+    setActiveTab(tab);
+    if (tab === 'manage-admins') {
+      fetchAdmins();
+    }
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     if (newPassword !== confirmPassword) {
@@ -56,7 +57,7 @@ const ManajemenAkun = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/admin/change-password', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -74,7 +75,7 @@ const ManajemenAkun = () => {
       } else {
         showMessage(data.error || 'Gagal mengubah password', 'error');
       }
-    } catch (err) {
+    } catch {
       showMessage('Terjadi kesalahan jaringan', 'error');
     } finally {
       setLoading(false);
@@ -86,7 +87,7 @@ const ManajemenAkun = () => {
     setLoading(true);
     try {
       const token = localStorage.getItem('token');
-      const res = await fetch('http://localhost:3000/api/admin/users', {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/users`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +105,7 @@ const ManajemenAkun = () => {
       } else {
         showMessage(data.error || 'Gagal menambahkan admin', 'error');
       }
-    } catch (err) {
+    } catch {
       showMessage('Terjadi kesalahan jaringan', 'error');
     } finally {
       setLoading(false);
@@ -126,7 +127,7 @@ const ManajemenAkun = () => {
       {/* Tabs */}
       <div className="flex space-x-1 bg-gray-100 dark:bg-gray-800/50 p-1 rounded-xl mb-8 w-fit">
         <button
-          onClick={() => setActiveTab('change-password')}
+          onClick={() => handleTabChange('change-password')}
           className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
             activeTab === 'change-password'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
@@ -137,7 +138,7 @@ const ManajemenAkun = () => {
           Ganti Password
         </button>
         <button
-          onClick={() => setActiveTab('manage-admins')}
+          onClick={() => handleTabChange('manage-admins')}
           className={`flex items-center px-4 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 ${
             activeTab === 'manage-admins'
               ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'

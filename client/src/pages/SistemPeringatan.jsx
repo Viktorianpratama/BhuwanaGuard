@@ -9,7 +9,7 @@ const SistemPeringatan = () => {
     const fetchReports = async () => {
       try {
         const token = localStorage.getItem('token');
-        const response = await fetch('http://localhost:3000/api/admin/reports', {
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/admin/reports`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         const result = await response.json();

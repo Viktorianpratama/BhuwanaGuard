@@ -11,7 +11,7 @@ const Home = () => {
   useEffect(() => {
     const fetchReports = async () => {
       try {
-        const response = await fetch('http://localhost:3000/api/public/reports');
+        const response = await fetch(`${import.meta.env.VITE_API_URL}/api/public/reports`);
         const result = await response.json();
         
         if (result.success) {
