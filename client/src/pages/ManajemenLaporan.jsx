@@ -137,7 +137,7 @@ const ManajemenLaporan = () => {
       <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-120px)]">
         
         {/* Kolom Kiri: Daftar Laporan */}
-        <div className={`w-full ${selectedReportId ? 'lg:w-1/3 hidden lg:flex' : 'lg:w-full'} flex-col bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-500`}>
+        <div className={`w-full ${selectedReportId ? 'lg:w-1/3 hidden lg:flex' : 'lg:w-full flex'} flex-col bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-500`}>
           <div className="p-6 border-b border-gray-100 dark:border-gray-700">
             <h1 className="text-2xl font-bold text-forest-900 dark:text-white mb-1 flex items-center">
               <Home className="h-6 w-6 mr-2" /> Manajemen Laporan
