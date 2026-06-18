@@ -66,71 +66,71 @@ const PetaRawan = () => {
   };
 
   return (
-    <div className="bg-gray-50 min-h-screen py-10 px-4 sm:px-6 lg:px-8">
+    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen py-10 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-8">
         
         {/* Header - Simple and Big for all ages */}
-        <div className="text-center bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
-          <div className="inline-flex items-center justify-center p-4 bg-red-100 rounded-full mb-4 text-red-600">
+        <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-300">
+          <div className="inline-flex items-center justify-center p-4 bg-red-100 dark:bg-red-900/30 rounded-full mb-4 text-red-600 dark:text-red-400">
             <ShieldAlert className="h-10 w-10" />
           </div>
-          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">Peta Kawasan Rawan</h1>
-          <p className="text-xl text-gray-700 max-w-3xl mx-auto font-medium">
+          <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 dark:text-white mb-4">Peta Kawasan Rawan</h1>
+          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-3xl mx-auto font-medium">
             Selamat datang di Peta Pengawasan. Di sini Anda bisa melihat area mana saja yang aman dan mana yang sedang dalam bahaya. 
             <br className="hidden md:block" />
-            <span className="font-bold text-red-600">Mohon perhatikan warna pada peta!</span>
+            <span className="font-bold text-red-600 dark:text-red-400">Mohon perhatikan warna pada peta!</span>
           </p>
         </div>
 
         {/* Legend - Very clear and concrete */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-red-200 flex items-center gap-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-2 border-red-200 dark:border-red-900/50 flex items-center gap-4 transition-colors duration-300">
             <div className="w-16 h-16 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-md">
               <AlertTriangle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-red-600">Merah = Diterima</h3>
-              <p className="text-gray-600 font-medium mt-1">Laporan baru yang belum direspon atau menunggu validasi.</p>
+              <h3 className="text-2xl font-bold text-red-600 dark:text-red-400">Merah = Diterima</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">Laporan baru yang belum direspon atau menunggu validasi.</p>
             </div>
           </div>
           
-          <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-yellow-200 flex items-center gap-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-2 border-yellow-200 dark:border-yellow-900/50 flex items-center gap-4 transition-colors duration-300">
             <div className="w-16 h-16 rounded-full bg-yellow-500 flex items-center justify-center shrink-0 shadow-md">
               <Info className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-yellow-600">Kuning = Diproses</h3>
-              <p className="text-gray-600 font-medium mt-1">Laporan sedang dalam penanganan oleh petugas kami.</p>
+              <h3 className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">Kuning = Diproses</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">Laporan sedang dalam penanganan oleh petugas kami.</p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl shadow-sm border-2 border-green-200 flex items-center gap-4">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border-2 border-green-200 dark:border-green-900/50 flex items-center gap-4 transition-colors duration-300">
             <div className="w-16 h-16 rounded-full bg-green-500 flex items-center justify-center shrink-0 shadow-md">
               <CheckCircle className="h-8 w-8 text-white" />
             </div>
             <div>
-              <h3 className="text-2xl font-bold text-green-600">Hijau = Selesai</h3>
-              <p className="text-gray-600 font-medium mt-1">Kejadian telah selesai ditangani dan area dinyatakan aman.</p>
+              <h3 className="text-2xl font-bold text-green-600 dark:text-green-400">Hijau = Selesai</h3>
+              <p className="text-gray-600 dark:text-gray-400 font-medium mt-1">Kejadian telah selesai ditangani dan area dinyatakan aman.</p>
             </div>
           </div>
         </div>
 
         {/* Map Container */}
-        <div className="bg-white p-4 rounded-3xl shadow-xl border border-gray-100 h-[650px] w-full z-0 overflow-hidden relative">
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 h-[650px] w-full z-0 overflow-hidden relative transition-colors duration-300 [&_.leaflet-layer]:dark:invert [&_.leaflet-layer]:dark:hue-rotate-180 [&_.leaflet-layer]:dark:brightness-90 [&_.leaflet-layer]:dark:contrast-90">
           {loading ? (
-            <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-2xl">
+            <div className="h-full w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-2xl">
               <div className="flex flex-col items-center space-y-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-4 border-forest-500 border-t-transparent"></div>
-                <p className="text-gray-600 font-medium">Memuat data koordinat dari server...</p>
+                <p className="text-gray-600 dark:text-gray-400 font-medium">Memuat data koordinat dari server...</p>
               </div>
             </div>
           ) : error ? (
-            <div className="h-full w-full flex items-center justify-center bg-gray-50 rounded-2xl">
-              <div className="text-center p-6 bg-red-50 rounded-2xl border border-red-100 max-w-md">
+            <div className="h-full w-full flex items-center justify-center bg-gray-50 dark:bg-gray-900 rounded-2xl">
+              <div className="text-center p-6 bg-red-50 dark:bg-red-900/20 rounded-2xl border border-red-100 dark:border-red-900/50 max-w-md">
                 <ShieldAlert className="h-12 w-12 text-red-500 mx-auto mb-4" />
-                <h3 className="text-lg font-bold text-red-700 mb-2">Gagal Memuat Peta</h3>
-                <p className="text-red-600">{error}</p>
-                <p className="text-sm text-red-500 mt-4">Pastikan Anda sudah login sebagai Admin dan server backend menyala.</p>
+                <h3 className="text-lg font-bold text-red-700 dark:text-red-400 mb-2">Gagal Memuat Peta</h3>
+                <p className="text-red-600 dark:text-red-400">{error}</p>
+                <p className="text-sm text-red-500 dark:text-red-500 mt-4">Pastikan Anda sudah login sebagai Admin dan server backend menyala.</p>
               </div>
             </div>
           ) : (
@@ -188,8 +188,8 @@ const PetaRawan = () => {
         </div>
         
         {/* Helper Note below map */}
-        <div className="text-center bg-blue-50 p-6 rounded-2xl border border-blue-100">
-          <p className="text-blue-800 font-medium text-lg">
+        <div className="text-center bg-blue-50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800/30 transition-colors duration-300">
+          <p className="text-blue-800 dark:text-blue-300 font-medium text-lg">
             <span className="font-bold">Cara menggunakan peta:</span> Geser peta dengan menyentuh dan menggeser layar. Tekan pada lingkaran berwarna untuk melihat informasi kejadian di tempat tersebut.
           </p>
         </div>
