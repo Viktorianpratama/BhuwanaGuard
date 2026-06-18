@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AlertTriangle, LayoutDashboard } from 'lucide-react';
+import { AlertTriangle, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const SistemPeringatan = () => {
   const [reports, setReports] = useState([]);
@@ -94,8 +95,10 @@ const SistemPeringatan = () => {
       
       {/* Header */}
       <div className="flex items-center space-x-4">
-        <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-forest-900 dark:text-forest-400">
-          <LayoutDashboard className="h-8 w-8" />
+        <div className="p-3 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-forest-900 dark:text-forest-400 hover:bg-forest-50 dark:hover:bg-gray-700 transition-colors">
+          <Link to="/admin" className="flex items-center justify-center">
+            <Home className="h-8 w-8 cursor-pointer" />
+          </Link>
         </div>
         <div>
           <h1 className="text-3xl font-bold text-forest-900 dark:text-white mb-1">Sistem Peringatan</h1>

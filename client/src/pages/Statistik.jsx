@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { LayoutDashboard, CheckCircle2, Clock, ShieldAlert } from 'lucide-react';
+import { LayoutDashboard, CheckCircle2, Clock, ShieldAlert, Home } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
 
@@ -136,7 +137,9 @@ const Statistik = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-1 flex items-center">
-            <LayoutDashboard className="h-7 w-7 mr-3 text-forest-700 dark:text-forest-400" />
+            <Link to="/admin" className="hover:text-forest-600 dark:hover:text-forest-400 transition-colors flex items-center">
+              <Home className="h-7 w-7 mr-3 text-forest-700 dark:text-forest-400 cursor-pointer" />
+            </Link>
             Dashboard Statistik
           </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400">Ringkasan analitik dan pemantauan data laporan Bhuwana Guard.</p>

@@ -41,16 +41,13 @@ const AdminDashboard = () => {
 
   const totalReports = reports.length;
   
-  // Hitung status
-  const activeReports = reports.filter(r => {
-    const s = (r.status || '').toLowerCase();
-    return s.includes('progress') || s.includes('proses') || s.includes('bahaya') || s.includes('darurat') || s.includes('lapangan');
-  }).length;
-  
   const finishedReports = reports.filter(r => {
     const s = (r.status || '').toLowerCase();
     return s.includes('selesai') || s.includes('aman') || s.includes('resolved');
   }).length;
+
+  // Laporan Aktif adalah semua laporan yang belum selesai
+  const activeReports = totalReports - finishedReports;
 
   // Hitung Rata-Rata Respon (Hanya perkiraan karena belum ada field resolvedAt di Firestore)
   let avgResponse = '0h';

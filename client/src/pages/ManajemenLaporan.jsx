@@ -41,9 +41,14 @@ const ManajemenLaporan = () => {
               status: mappedStatus,
               severity: severity,
               desc: r.address || 'Detail lengkap laporan',
-              image: r.imageUrl
+              image: r.imageUrl,
+              createdAt: r.createdAt || new Date(0).toISOString()
             };
           });
+
+          // Urutkan laporan berdasarkan waktu terbaru
+          mappedData.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
           setReports(mappedData);
         } else {
           setError(result.error);
